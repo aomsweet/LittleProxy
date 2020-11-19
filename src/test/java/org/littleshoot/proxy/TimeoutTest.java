@@ -1,10 +1,8 @@
 package org.littleshoot.proxy;
 
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -38,7 +36,7 @@ public class TimeoutTest {
     @Before
     public void setUp() {
         mockServer = new ClientAndServer(0);
-        mockServerPort = mockServer.getPort();
+        mockServerPort = mockServer.getLocalPort();
     }
 
     @After
@@ -55,7 +53,7 @@ public class TimeoutTest {
     }
 
     @Test
-    public void testIdleConnectionTimeout() throws IOException {
+    public void testIdleConnectionTimeout() throws Exception {
         proxyServer = DefaultHttpProxyServer.bootstrap()
                 .withPort(0)
                 .withIdleConnectionTimeout(1)
@@ -70,9 +68,7 @@ public class TimeoutTest {
                                 .withDelay(new Delay(TimeUnit.SECONDS, 5))
                 );
 
-        DefaultHttpClient httpClient = new DefaultHttpClient();
-        final HttpHost proxy = new HttpHost("127.0.0.1", proxyServer.getListenAddress().getPort(), "http");
-        httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+        CloseableHttpClient httpClient = TestUtils.createProxiedHttpClient(proxyServer.getListenAddress().getPort());
 
         long start = System.nanoTime();
         HttpGet get = new HttpGet("http://127.0.0.1:" + mockServerPort + "/idleconnection");
@@ -87,15 +83,13 @@ public class TimeoutTest {
     }
 
     @Test
-    public void testConnectionTimeout() throws IOException {
+    public void testConnectionTimeout() throws Exception {
         proxyServer = DefaultHttpProxyServer.bootstrap()
                 .withPort(0)
                 .withConnectTimeout(1000)
                 .start();
 
-        DefaultHttpClient httpClient = new DefaultHttpClient();
-        final HttpHost proxy = new HttpHost("127.0.0.1", proxyServer.getListenAddress().getPort(), "http");
-        httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+        CloseableHttpClient httpClient = TestUtils.createProxiedHttpClient(proxyServer.getListenAddress().getPort());
 
         HttpGet get = new HttpGet(UNUSED_URI_FOR_BAD_GATEWAY);
 

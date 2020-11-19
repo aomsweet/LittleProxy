@@ -17,11 +17,12 @@ import org.mockserver.matchers.Times;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.greaterThan;
@@ -44,7 +45,7 @@ public class EndToEndStoppingTest {
     @Before
     public void setUp() {
         mockServer = new ClientAndServer(0);
-        mockServerPort = mockServer.getPort();
+        mockServerPort = mockServer.getLocalPort();
     }
 
     @After
@@ -61,7 +62,7 @@ public class EndToEndStoppingTest {
      * explicitly calling System.exit(), which running as an application
      * properly tests.
      */
-    public static void main(final String[] args) throws Exception {
+    public static void main(final String[] args) {
         HttpProxyServer proxyServer = DefaultHttpProxyServer.bootstrap()
                 .withPort(0)
                 .start();
@@ -72,7 +73,7 @@ public class EndToEndStoppingTest {
         proxy.setHttpProxy(proxyStr);
         proxy.setSslProxy(proxyStr);
 
-        DesiredCapabilities capability = DesiredCapabilities.firefox();
+        FirefoxOptions capability = new FirefoxOptions();
         capability.setCapability(CapabilityType.PROXY, proxy);
 
         String urlString = "http://www.yahoo.com/";
@@ -150,7 +151,7 @@ public class EndToEndStoppingTest {
             HttpResponse response = client.execute(get);
             assertEquals(200, response.getStatusLine().getStatusCode());
             final HttpEntity entity = response.getEntity();
-            final String body = IOUtils.toString(entity.getContent());
+            final String body = IOUtils.toString(entity.getContent(), StandardCharsets.US_ASCII);
             EntityUtils.consume(entity);
 
             log.info("Consuming entity -- got body: {}", body);
@@ -165,7 +166,7 @@ public class EndToEndStoppingTest {
     }
 
     // @Test
-    public void testWithWebDriver() throws Exception {
+    public void testWithWebDriver() {
         HttpProxyServer proxyServer = DefaultHttpProxyServer.bootstrap()
                 .withPort(0)
                 .start();
@@ -176,7 +177,7 @@ public class EndToEndStoppingTest {
         proxy.setHttpProxy(proxyStr);
         proxy.setSslProxy(proxyStr);
 
-        DesiredCapabilities capability = DesiredCapabilities.firefox();
+        FirefoxOptions capability = new FirefoxOptions();
         capability.setCapability(CapabilityType.PROXY, proxy);
 
         final String urlString = "http://www.yahoo.com/";

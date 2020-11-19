@@ -3,6 +3,7 @@ package org.littleshoot.proxy;
 import org.littleshoot.proxy.impl.ThreadPoolConfiguration;
 import org.littleshoot.proxy.ratelimit.RateLimiter;
 
+import org.littleshoot.proxy.impl.ServerGroup;
 import java.net.InetSocketAddress;
 
 /**
@@ -346,6 +347,14 @@ public interface HttpProxyServerBootstrap {
     HttpProxyServerBootstrap withServerResolver(HostResolver serverResolver);
 
     /**
+    * Specify a custom {@link ServerGroup} to use for managing this server's resources and such.
+    * If one isn't provided, a default one will be created using the {@link ThreadPoolConfiguration} provided
+    *
+    * @param group A custom server group
+    */
+    HttpProxyServerBootstrap withServerGroup(ServerGroup group);
+
+    /**
      * <p>
      * Add an {@link ActivityTracker} for tracking activity in this proxy.
      * </p>
@@ -412,6 +421,20 @@ public interface HttpProxyServerBootstrap {
      * @return proxy server bootstrap for chaining
      */
     HttpProxyServerBootstrap withThreadPoolConfiguration(ThreadPoolConfiguration configuration);
+
+    /**
+     * Specifies if the proxy server should accept a proxy protocol header. Once set it works with request that
+     * include a proxy protocol header. The proxy server reads an incoming proxy protocol header from the
+     * client.
+     * @param allowProxyProtocol when true, the proxy will accept a proxy protocol header
+     */
+    HttpProxyServerBootstrap withAcceptProxyProtocol(boolean allowProxyProtocol);
+
+    /**
+     * Specifies if the proxy server should send a proxy protocol header.
+     * @param sendProxyProtocol when true, the proxy will send a proxy protocol header
+     */
+    HttpProxyServerBootstrap withSendProxyProtocol(boolean sendProxyProtocol);
 
     /**
      * <p>

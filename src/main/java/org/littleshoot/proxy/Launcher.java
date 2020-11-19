@@ -54,7 +54,7 @@ public class Launcher {
                 "Display command line help.");
         options.addOption(null, OPTION_MITM, false, "Run as man in the middle.");
         
-        final CommandLineParser parser = new PosixParser();
+        final CommandLineParser parser = new DefaultParser();
         final CommandLine cmd;
         try {
             cmd = parser.parse(options, args);

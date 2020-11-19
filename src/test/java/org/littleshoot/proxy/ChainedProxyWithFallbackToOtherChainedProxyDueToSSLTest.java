@@ -19,23 +19,20 @@ public class ChainedProxyWithFallbackToOtherChainedProxyDueToSSLTest extends
     }
 
     protected ChainedProxyManager chainedProxyManager() {
-        return new ChainedProxyManager() {
-            @Override
-            public void lookupChainedProxies(HttpRequest httpRequest,
-                    Queue<ChainedProxy> chainedProxies) {
-                // This first one has a bad cert
-                chainedProxies.add(newChainedProxy());
-                // This 2nd one should work
-                chainedProxies.add(new BaseChainedProxy() {
-                    @Override
-                    public TransportProtocol getTransportProtocol() {
-                        return TransportProtocol.TCP;
-                    }
+        return (httpRequest, chainedProxies, clientDetails) -> {
+            // This first one has a bad cert
+            chainedProxies.add(newChainedProxy());
+            // This 2nd one should work
+            chainedProxies.add(new BaseChainedProxy() {
+                @Override
+                public TransportProtocol getTransportProtocol() {
+                    return TransportProtocol.TCP;
+                }
 
-                    @Override
-                    public boolean requiresEncryption() {
-                        return true;
-                    }
+                @Override
+                public boolean requiresEncryption() {
+                    return true;
+                }
 
                     @Override
                     public SSLEngine newSslEngine() {
