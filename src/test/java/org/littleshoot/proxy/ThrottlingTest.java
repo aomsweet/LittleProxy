@@ -4,10 +4,8 @@ import org.apache.http.HttpHost;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
@@ -16,8 +14,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
-
-import java.io.IOException;
 
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.greaterThan;
@@ -50,7 +46,7 @@ public class ThrottlingTest {
     private int readWebServerPort;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Set up some large data
         largeData = new byte[100000];
         for (int i = 0; i < largeData.length; i++) {
@@ -81,7 +77,7 @@ public class ThrottlingTest {
     }
 
     @Test
-    public void aWarmUpTest() throws IOException {
+    public void aWarmUpTest() throws Exception {
         // a "warm-up" test so the first test's results are not skewed due to classloading, etc. guaranteed to run
         // first with the @FixMethodOrder(MethodSorters.NAME_ASCENDING) annotation on the class.
 
@@ -93,7 +89,7 @@ public class ThrottlingTest {
         int proxyPort = proxyServer.getListenAddress().getPort();
 
         HttpGet request = createHttpGet();
-        DefaultHttpClient httpClient = createHttpClient(proxyPort);
+        CloseableHttpClient httpClient = TestUtils.createProxiedHttpClient(proxyPort);
 
         EntityUtils.consumeQuietly(httpClient.execute(new HttpHost("127.0.0.1", writeWebServerPort), request).getEntity());
 
@@ -111,7 +107,7 @@ public class ThrottlingTest {
 
         final HttpPost request = createHttpPost();
 
-        DefaultHttpClient httpClient = createHttpClient(proxyPort);
+        CloseableHttpClient httpClient = TestUtils.createProxiedHttpClient(proxyPort);
 
         long start = System.currentTimeMillis();
         final org.apache.http.HttpResponse response = httpClient.execute(
@@ -139,7 +135,7 @@ public class ThrottlingTest {
 
         final HttpPost request = createHttpPost();
 
-        DefaultHttpClient httpClient = createHttpClient(proxyPort);
+        CloseableHttpClient httpClient = TestUtils.createProxiedHttpClient(proxyPort);
 
         long start = System.currentTimeMillis();
         final org.apache.http.HttpResponse response = httpClient.execute(
@@ -167,7 +163,7 @@ public class ThrottlingTest {
 
         final HttpGet request = createHttpGet();
 
-        DefaultHttpClient httpClient = createHttpClient(proxyPort);
+        CloseableHttpClient httpClient = TestUtils.createProxiedHttpClient(proxyPort);
 
         long start = System.currentTimeMillis();
         final org.apache.http.HttpResponse response = httpClient.execute(
@@ -200,7 +196,7 @@ public class ThrottlingTest {
 
         final HttpGet request = createHttpGet();
 
-        DefaultHttpClient httpClient = createHttpClient(proxyPort);
+        CloseableHttpClient httpClient = TestUtils.createProxiedHttpClient(proxyPort);
 
         long start = System.currentTimeMillis();
         final org.apache.http.HttpResponse response = httpClient.execute(
@@ -223,7 +219,7 @@ public class ThrottlingTest {
     }
 
     @Test
-    public void testChangeThrottling() throws IOException {
+    public void testChangeThrottling() throws Exception {
         HttpProxyServer proxyServer = DefaultHttpProxyServer.bootstrap()
                 .withPort(0)
                 .withThrottling(THROTTLED_READ_BYTES_PER_SECOND, 0)
@@ -233,7 +229,7 @@ public class ThrottlingTest {
 
         final HttpGet request = createHttpGet();
 
-        DefaultHttpClient httpClient = createHttpClient(proxyPort);
+        CloseableHttpClient httpClient = TestUtils.createProxiedHttpClient(proxyPort);
 
         long firstStart = System.currentTimeMillis();
         org.apache.http.HttpResponse response = httpClient.execute(
@@ -277,7 +273,7 @@ public class ThrottlingTest {
     }
 
     @Test
-    public void testDisableThrottling() throws IOException {
+    public void testDisableThrottling() throws Exception {
         HttpProxyServer proxyServer = DefaultHttpProxyServer.bootstrap()
                 .withPort(0)
                 .withThrottling(THROTTLED_READ_BYTES_PER_SECOND, 0)
@@ -287,7 +283,7 @@ public class ThrottlingTest {
 
         final HttpGet request = createHttpGet();
 
-        DefaultHttpClient httpClient = createHttpClient(proxyPort);
+        CloseableHttpClient httpClient = TestUtils.createProxiedHttpClient(proxyPort);
 
         long firstStart = System.currentTimeMillis();
         org.apache.http.HttpResponse response = httpClient.execute(
@@ -333,26 +329,16 @@ public class ThrottlingTest {
 
     private HttpGet createHttpGet() {
         final HttpGet request = new HttpGet("/");
-        request.getParams().setParameter(
-                CoreConnectionPNames.CONNECTION_TIMEOUT, 5000);
+        request.setConfig(TestUtils.REQUEST_TIMEOUT_CONFIG);
         return request;
     }
 
     private HttpPost createHttpPost() {
         final HttpPost request = new HttpPost("/");
-        request.getParams().setParameter(
-                CoreConnectionPNames.CONNECTION_TIMEOUT, 5000);
+        request.setConfig(TestUtils.REQUEST_TIMEOUT_CONFIG);
         final ByteArrayEntity entity = new ByteArrayEntity(largeData);
         entity.setChunked(true);
         request.setEntity(entity);
         return request;
-    }
-
-    private DefaultHttpClient createHttpClient(int proxyPort) {
-        DefaultHttpClient httpClient = new DefaultHttpClient();
-        final HttpHost proxy = new HttpHost("127.0.0.1", proxyPort, "http");
-        httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY,
-                proxy);
-        return httpClient;
     }
 }

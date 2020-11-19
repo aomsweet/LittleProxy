@@ -37,8 +37,6 @@ public abstract class BaseProxyTest extends AbstractProxyTest {
     /**
      * This test tests a HEAD followed by a GET for the same resource, making
      * sure that the requests complete and that the Content-Length matches.
-     * 
-     * @throws Exception
      */
     @Test
     public void testHeadRequestFollowedByGet() throws Exception {
@@ -48,8 +46,11 @@ public abstract class BaseProxyTest extends AbstractProxyTest {
     @Test
     public void testProxyWithBadAddress()
             throws Exception {
+        // This test used to try connecting to "test.localhost" and that worked for for local builds, but resulted in
+        // the wrong error (405 instead of 502) on the build server due to nginx.  So, switched it to localhost:17,
+        // which should work as long as there's not a web server running on the QOTD port.
         ResponseInfo response =
-                httpPostWithApacheClient(new HttpHost("test.localhost"),
+                httpPostWithApacheClient(new HttpHost("localhost", 17),
                         DEFAULT_RESOURCE, true);
         assertReceivedBadGateway(response);
     }
