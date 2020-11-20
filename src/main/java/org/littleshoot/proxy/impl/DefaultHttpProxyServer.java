@@ -262,7 +262,7 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
             int maxChunkSize,
             boolean allowRequestsToOriginServer,
             boolean acceptProxyProtocol,
-            boolean sendProxyProtocol) {
+            boolean sendProxyProtocol,
             RateLimiter rateLimiter) {
         this.serverGroup = serverGroup;
         this.transportProtocol = transportProtocol;
