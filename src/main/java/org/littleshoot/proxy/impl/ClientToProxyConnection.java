@@ -5,7 +5,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.compression.BrotliHttpContentCompressor;
 import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -517,6 +516,7 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
             return true;
         }
 
+        @Override
         protected Future<?> execute() {
             LOG.debug("Responding with CONNECT successful");
             HttpResponse response = ProxyUtils.createFullHttpResponse(HttpVersion.HTTP_1_1,
@@ -833,8 +833,6 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
                 proxyServer.getMaxInitialLineLength(),
                 proxyServer.getMaxHeaderSize(),
                 proxyServer.getMaxChunkSize()));
-
-        pipeline.addLast("brotli_compressor", new BrotliHttpContentCompressor());
 
         // Enable aggregation for filtering if necessary
         int numberOfBytesToBuffer = proxyServer.getFiltersSource()

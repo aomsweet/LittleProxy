@@ -3,7 +3,6 @@ package org.littleshoot.proxy.impl;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.handler.codec.compression.GeneralHttpContentDecompressor;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.ssl.SslHandler;
@@ -329,6 +328,7 @@ abstract class ProxyConnection<I extends HttpObject> extends
             return true;
         }
 
+        @Override
         protected Future execute() {
             try {
                 ChannelPipeline pipeline = ctx.pipeline();
@@ -430,7 +430,6 @@ abstract class ProxyConnection<I extends HttpObject> extends
      */
     protected void aggregateContentForFiltering(ChannelPipeline pipeline,
             int numberOfBytesToBuffer) {
-        pipeline.addLast("inflater", new GeneralHttpContentDecompressor());
         pipeline.addLast("aggregator", new HttpObjectAggregator(
                 numberOfBytesToBuffer));
     }

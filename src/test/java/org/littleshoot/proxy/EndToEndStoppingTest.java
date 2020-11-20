@@ -45,7 +45,7 @@ public class EndToEndStoppingTest {
     @Before
     public void setUp() {
         mockServer = new ClientAndServer(0);
-        mockServerPort = mockServer.getLocalPort();
+        // mockServerPort = mockServer.getLocalPort();
     }
 
     @After
@@ -151,7 +151,8 @@ public class EndToEndStoppingTest {
             HttpResponse response = client.execute(get);
             assertEquals(200, response.getStatusLine().getStatusCode());
             final HttpEntity entity = response.getEntity();
-            final String body = IOUtils.toString(entity.getContent(), StandardCharsets.US_ASCII);
+            // final String body = IOUtils.toString(entity.getContent(), StandardCharsets.US_ASCII);
+            final String body = IOUtils.toString(entity.getContent(), StandardCharsets.US_ASCII.name());
             EntityUtils.consume(entity);
 
             log.info("Consuming entity -- got body: {}", body);

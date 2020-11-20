@@ -1,5 +1,6 @@
 package org.littleshoot.proxy;
 
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 import org.junit.Assert;
 import org.littleshoot.proxy.impl.ClientDetails;
@@ -33,7 +34,6 @@ public class AuthenticatingProxyWithChainingTest extends BaseProxyTest
         return "user2";
     }
 
-    @Override
     public boolean authenticate(String userName, String password) {
         return getUsername().equals(userName) && getPassword().equals(password);
     }
@@ -44,7 +44,17 @@ public class AuthenticatingProxyWithChainingTest extends BaseProxyTest
     }
 
     @Override
+    public boolean authenticate(HttpRequest httpRequest) {
+        return false;
+    }
+
+    @Override
     public String getRealm() {
+        return null;
+    }
+
+    @Override
+    public FullHttpResponse authenticationFailureResponse(HttpRequest request) {
         return null;
     }
 

@@ -47,7 +47,7 @@ public class HttpFilterTest {
         webServerPort = TestUtils.findLocalHttpPort(webServer);
 
         mockServer = new ClientAndServer(0);
-        mockServerPort = mockServer.getLocalPort();
+        // mockServerPort = mockServer.getLocalPort();
 
     }
 
@@ -619,8 +619,6 @@ public class HttpFilterTest {
                             public SSLEngine newSslEngine(String peerHost, int peerPort) {
                                 return new SelfSignedSslEngineSource("chain_proxy_keystore_2.jks").newSslEngine(peerHost, peerPort);
                             }
-                        });
-                    }
                 }))
                 .start();
 

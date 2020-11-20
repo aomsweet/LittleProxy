@@ -31,7 +31,7 @@ public class CustomProxyToServerExHandlerTest extends MitmWithBadServerAuthentic
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  protected void tearDown() {
     this.upstreamProxy.abort();
   }
 

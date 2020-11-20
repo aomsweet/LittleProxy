@@ -30,7 +30,7 @@ public class ProxyHeadersTest {
     @Before
     public void setUp() {
         mockServer = new ClientAndServer(0);
-        mockServerPort = mockServer.getLocalPort();
+        // mockServerPort = mockServer.getLocalPort();
     }
 
     @After

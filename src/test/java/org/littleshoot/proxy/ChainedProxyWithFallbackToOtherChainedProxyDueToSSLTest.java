@@ -44,7 +44,6 @@ public class ChainedProxyWithFallbackToOtherChainedProxyDueToSSLTest extends
                         return serverSslEngineSource.newSslEngine(peerHost, peerPort);
                     }
                 });
-            }
         };
     }
 }
